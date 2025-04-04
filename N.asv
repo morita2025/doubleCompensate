@@ -1,0 +1,31 @@
+function y = N(cycle_count,dt,prev_variable,prm)
+
+
+        if prm.settings.isRugekuttaMethodUse == 1
+            y = moritaEulerMethod(@getNDxdt,cycle_count,dt,prev_variable,prm);
+        end
+
+        if prm.settings.isRugekuttaMethodUse == 0
+            y = moritaRungekuttaMethod(@getNDxdt,cycle_count,dt,prev_variable,prm);
+        end
+
+end
+
+
+
+
+
+
+function dxdt = getNDxdt(cycle_count,dt,input,prm)
+            y_a = input(:,1);
+            y_prev = input(:,2);
+            %入力熱量
+            dxdt = prm.interferrenceConstPrm.y.*y_a./[prm.mw_cw13; prm.ma_ca2; prm.mw_cw13];
+            %プラント
+            dxdt = dxdt - prm.A_w.*y_prev;
+            %干渉
+            if prm.settings.isInterferrence
+                dxdt = dxdt + prm.interferrenceConstPrm.y.*[y_prev(2); y_prev(1)+y_prev(3); y_prev(2)]./[]
+            end
+        
+end

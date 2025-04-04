@@ -1,0 +1,12 @@
+function next_cycle_variable = moritaRungekuttaMethod(functionPointer,cycle_count,dt,prev_variable,prm)
+
+    half_dt = dt/2;
+    k1 = functionPointer(cycle_count,dt,prev_variable,prm);
+    k2 = functionPointer(cycle_count,dt,prev_variable+half_dt*[prev_variable(:,1),k1,0],prm);
+    k3 = functionPointer(cycle_count,dt,prev_variable+half_dt*[0,k2(:,2),0],prm);
+    k4 = functionPointer(cycle_count,dt,prev_variable+dt*[0,k3(:,2),0],prm);
+
+    next_cycle_variable = (k1(:,2) + 2*k2(:,2) + 2*k3(:,2) +k4(:,2)) * (dt/6) + prev_variable(:,2);
+
+
+end

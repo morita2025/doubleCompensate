@@ -21,7 +21,7 @@ function dxdt = getD_invDxdt(cycleCount,dt,input,prm,isInterferrence)
         end
 
         if isInterferrence
-            dxdt = dxdt + prm.interferrenceConstPrm.y_a.*([y_a_prev(2); y_a_prev(1)+y_a_prev(3);  y_a_prev(2)])./[prm.ma_ca13; prm.ma_ca2; prm.ma_ca13] ...
+            dxdt = dxdt + prm.interferrenceConstPrm.y_a.*([y_a_prev(2); y_a_prev(2)+y_a_prev(1)+y_a_prev(3);  y_a_prev(2)]  - ya)./[prm.ma_ca13; prm.ma_ca2; prm.ma_ca13] ...
                         + prm.interferrenceConstPrm.y_aw.*y_prev./[prm.ma_ca13; prm.ma_ca2; prm.ma_ca13];
         end
 

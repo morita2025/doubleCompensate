@@ -97,7 +97,7 @@ plot(t,variable.ref(1,1:end),"b") %tube
 %ブレークポイントに関するショートカットを調べる
 
 
-%% a
+%リポジトリ, init, add, commit(＋初回呪文), push, bramch, checkout, pull
 
 
 
@@ -126,7 +126,7 @@ plotInputData = inputData;
 % t=transpose(timeData);
 % 
 % 
-%init → repositorry → remote add "url" → add → commit → push → (branch, checkout) 
+% 
 
 
 % makeGraph
@@ -157,7 +157,7 @@ makeGraph(t',plotTempData, ...
                     "lineWidth",[1,1,1,1], ..."yLimit",[22.4 27.5],...
                     "isSave",FILE_IS_SAVE,"outDir",OUT_DIR_PATH, ...
                     "fontSize",20,"LabelFontSize",30,"saveFileExt","jpg");
-%制御入力 %
+%制御入力
 % plotInputData = transpose(variable.u([1,3],:)); %
 makeGraph(t',plotInputData , ...
                     "lineName",CONTROLINPUT_LINE_NAME, ...

@@ -125,7 +125,7 @@ classdef CalcOperatorPrm_kato < handle
             b1 = 2*obj.peltier.thermalConductance;
             b2 = obj.settings.heatTransferCoef_air* (2*obj.S(1,1) + 2*obj.S(2,1) + obj.S(3,1) -obj.S(5,1));
             b3 = obj.settings.heatTransferCoef_water*obj.S(6,1);
-            b4 = obj.aluminum.thermalCond*obj.S(3,1)/obj.dx13;
+            b4 = obj.aluminum.thermalCond*obj.S(3,1)/obj.dxThermalCond(1);
             b5 = 4*( (obj.settings.outsideTemperature+obj.quantity.absoluteTemperature)^3 )*obj.aluminum.emissivity * obj.quantity.boltzmannConst*(2*obj.S(1,1) + 2*obj.S(2,1) + obj.S(3,1) -obj.S(5,1));
             c1 = m_a13 * obj.aluminum.specificHeat; 
             
@@ -156,7 +156,7 @@ classdef CalcOperatorPrm_kato < handle
             b1 = obj.settings.heatTransferCoef_air + 4*obj.aluminum.emissivity * obj.quantity.boltzmannConst * ((obj.settings.outsideTemperature+obj.quantity.absoluteTemperature)^(3));
             b2 = 2*obj.S(7,1) + 2*obj.S(8,1);
             b3 = obj.settings.heatTransferCoef_water * obj.S(9,1);
-            b4 = (2 * obj.aluminum.thermalCond * obj.S(3,1)) / obj.dx2 ;
+            b4 = (2 * obj.aluminum.thermalCond * obj.S(3,1)) / obj.dxThermalCond(2) ;
             c1 = m_a2 * obj.aluminum.specificHeat; 
             
             A_a(2,1) = (b1 * b2 + b3 + b4) / c1;
@@ -187,7 +187,7 @@ classdef CalcOperatorPrm_kato < handle
             b1 = 2*obj.peltier.thermalConductance;
             b2 = obj.settings.heatTransferCoef_air * (2*obj.S(1,1) + 2*obj.S(2,1) + obj.S(3,1) -obj.S(5,1));
             b3 = obj.settings.heatTransferCoef_water*obj.S(6,1);
-            b4 = obj.aluminum.thermalCond*obj.S(3,1)/obj.dx13;
+            b4 = obj.aluminum.thermalCond*obj.S(3,1)/obj.dxThermalCond(3);
             b5 = 4*((obj.settings.outsideTemperature+obj.quantity.absoluteTemperature)^(3))*obj.aluminum.emissivity * obj.quantity.boltzmannConst*(2*obj.S(1,1) + 2*obj.S(2,1) + obj.S(3,1) -obj.S(5,1));
             c1 = m_a13 * obj.aluminum.specificHeat; 
             

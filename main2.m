@@ -1,27 +1,30 @@
 clear ;
 close all;
-max_time = 1000;
+max_time = 1200;
 dt = 1;
 t = 0:dt:max_time;
-ref = [3.8; 4];
+ref = [4; 4.5];
 
-prm =  CalcOperatorPrm_kato(outsideTemperature=28,max_time=max_time,i_max=2,i_min=0,heatTransferCoef_water=270,tau=5,p=0.6,...
-                           isRugekuttaMethodUse=1,isInterferrence=true,isD1Compensate=true,isD2Compensate=true);
+prm =  CalcOperatorPrm_kato(outsideTemperature=28,max_time=max_time,i_max=2,i_min=0,heatTransferCoef_water=270,tau=30,p=1/30,p2=0.15,...
+                           isRugekuttaMethodUse=1,isInterferrence=true,isD1Compensate=true,isD2Compensate=false);
 variable= getVariableFunction(length(t),ref);
 operatorTempVariable = struct("B_inv",struct("y_w_prev",zeros(3,1),"x_1_prev",zeros(3,1),"x_2_prev",zeros(3,1),"x_3_prev",zeros(3,1),"x_debug_prev",zeros(3,1),"x_debug2_prev",zeros(3,1),"x_debug3_prev",zeros(3,1)),...
                           "N_tilde",struct("y_a_tilde",zeros(3,1)),...
                           "D_tilde_inv",struct( ),...
                           "disturbanceRejectionOperator",struct("y_w_prev",zeros(3,1),"y_a_tilde_prev",zeros(3,1),"y_a",zeros(3,1),...
-                                                                "invPlantStateVariable",zeros(3,2),"debug",zeros(3,2),...
+                                                                "invPlantStateVariable",zeros(3,2),"invPlantStateVariableM",zeros(3,2),"debug",zeros(3,2),...
+                                                                "g",zeros(3,1),...
                                                                 "y_w_tilde_prev",zeros(3,1),"d_c_prev",zeros(3,1),"d_prev",zeros(3,1)));
 
 refTimePrm = 1/10;
 refChangeTime = 400;
 variable.ref(:,:) = [ref(1); 0; ref(2)].* (1 - exp(-refTimePrm*t)  );
-variable.ref(:,refChangeTime:end)  = [5; 0; 5.5] .* ones(3,max_time-refChangeTime+2);
+% variable.ref(:,refChangeTime:end)  = [5; 0; 5.5] .* ones(3,max_time-refChangeTime+2);
 
-variable.tubeGairan([1,3],600:end) = -1;%*repmat(sin(0.01*t(1:402)),2,1);
-variable.almiGairan([1,3],800:end) = -1*ones(2,202);
+% variable.tubeGairan([1,3],400:end) = -0.5;
+variable.tubeGairan([1,3],800:end) = -1;
+variable.almiGairan([1,3],450:end) = -0.5;
+variable.almiGairan([1,3],800:end) = -1;
 
 
 for cycleCount = 1:length(t)
@@ -55,13 +58,15 @@ for cycleCount = 1:length(t)
                             prm);
             %外乱(アルミ)
             variable.y_a(:,cycleCount+1) = variable.y_a_asterisk(:,cycleCount+1) + variable.almiGairan(:,cycleCount);
-            %外乱(チューブ)
-            variable.ya_gairan(:,cycleCount) = variable.y_a(:,cycleCount) + variable.tubeGairan(:,cycleCount);
-        
+
             %
-            variable.y(:,cycleCount+1) = N(cycleCount,dt,...
-                    [variable.ya_gairan(:,cycleCount),variable.y(:,cycleCount),zeros(3,1)],...
+            variable.y_asterisk(:,cycleCount+1) = N(cycleCount,dt,...
+                    [variable.y_a(:,cycleCount),variable.y_asterisk(:,cycleCount),zeros(3,1)],...
                     prm);
+
+            %外乱(チューブ)
+            variable.y(:,cycleCount+1) = variable.y_asterisk(:,cycleCount+1) + variable.tubeGairan(:,cycleCount+1);
+        
         end
 
         %% プラント(右分解)
@@ -86,9 +91,15 @@ for cycleCount = 1:length(t)
         variable.y_f(:,cycleCount) = operatorTempVariable.disturbanceRejectionOperator.d_prev(:,1);
         variable.y_g(:,cycleCount) = operatorTempVariable.disturbanceRejectionOperator.invPlantStateVariable(:,1);
         variable.y_v(:,cycleCount) = operatorTempVariable.disturbanceRejectionOperator.debug(:,1);
+        variable.y_h(:,cycleCount) = operatorTempVariable.disturbanceRejectionOperator.g(:,1);
 
     end
 end
+% plot(variable.y_g(1,:),"Color","b","LineWidth",2)
+% hold on
+% plot(variable.y_v(1,:))
+
+
 % figure()
 % plot(t,variable.r_01(1,:),"r")%almi
 % hold on
@@ -114,12 +125,13 @@ plotTempData = [RefData, tempData];
 plotInputData = inputData;
 
 
+
 %% plot
 
 
 isExperimentGraph = false;
-if ~isExperimentGraph % makeGraphの上書き
-    load("C:\Users\mykot\OneDrive - Tokyo University of Agriculture and Technology\60MATLAB_sagyou\MicroreactorSystem2_morita\data\250415moritaOK.mat");
+if isExperimentGraph % makeGraphの上書き
+    load("C:\Users\mykot\OneDrive - Tokyo University of Agriculture and Technology\60MATLAB_sagyou\MicroreactorSystem2_morita\data\20250714_kato_5.mat");
     tempData = data.temperature.sens(5:end,[1,3]);
     timeData = data.time(5:end,:);
     RefData = data.temperature.ref(4:end,:);
@@ -129,25 +141,25 @@ if ~isExperimentGraph % makeGraphの上書き
     plotInputData = inputData;
     t=transpose(timeData);
 else
-    % plotTempData = prm.settings.outsideTemperature-[transpose(variable.ref([1,3],:)) ,transpose(variable.y([1,3],:))]; %
+    plotTempData = prm.settings.outsideTemperature-[transpose(variable.ref([1,3],:)) ,transpose(variable.y([1,3],:))]; %
     plotInputData = transpose(variable.u([1,3],:)); %
 end
 
 
 % makeGraph
 FILE_IS_SAVE=false;
-graphToolPath="C:\Users\mykot\OneDrive - Tokyo University of Agriculture and Technology\60MATLAB_sagyou\makeGraph";
+graphToolPath="C:\Users\mykot\OneDrive - Tokyo University of Agriculture and Technology (1)\60MATLAB_sagyou\makeGraph";
 addpath(graphToolPath);
-DATA_DIR_PATH = "C:\Users\mykot\OneDrive - Tokyo University of Agriculture and Technology\60MATLAB_sagyou\kato_simulation\graph"; %exp 
-OUT_DIR_PATH = "C:\Users\mykot\OneDrive - Tokyo University of Agriculture and Technology\60MATLAB_sagyou\kato_simulation\graph\";
-TEMPERATURE_GRAPH_TITLE = ["temperature(ronbun_hikaku)"];
-TEMPERATURE_LINE_NAME = ["$T_{0_2}-r^{\ast}_1$","$T_{0_2}-r^{\ast}_3$","$\mathrm{Part} \mathrm{W_1}$","$$\mathrm{Part} \mathrm{W_3}$"];
-TEMPERATURE_LINE_WIDTH = [1,1,2,2];
+DATA_DIR_PATH = "C:\Users\mykot\OneDrive - Tokyo University of Agriculture and Technology\40発表ゼミ\jisaku\figure\2025_5_19\"; %exp 
+OUT_DIR_PATH = "C:\Users\mykot\OneDrive - Tokyo University of Agriculture and Technology (1)\40発表ゼミ\jisaku\figure\2025_7_20\";
+TEMPERATURE_GRAPH_TITLE = ["gairan"];
+TEMPERATURE_LINE_NAME = ["$T_{0}-r_1$","$T_{0}-r_3$","$\mathrm{Part} \mathrm{W_1}$","$$\mathrm{Part} \mathrm{W_3}$"];
+TEMPERATURE_LINE_WIDTH = [2,2,2,2];
 TEMPERATURE_LABEL_NAME = ["Time [$\mathrm{s}]$","Temperature [$^{\circ}\mathrm{C}]$"];
 TEMPERATURE_LINE_STYLE = ["--","--","-","-",];
 
 
-CONTROLINPUT_GRAPH_TITLE = ["controlInput(ronbun_hikaku)"];
+CONTROLINPUT_GRAPH_TITLE = ["temperature_kato"];
 CONTROLINPUT_LINE_NAME = ["$u_1$","$u_3$"];
 CONTROLINPUT_LABEL_NAME = ["Time [$\mathrm{s}]$","Current [$\mathrm{A}$]"];
 %温度
@@ -158,17 +170,19 @@ makeGraph(t',plotTempData, ...
                     "labelName",TEMPERATURE_LABEL_NAME, ...
                     "graphName",TEMPERATURE_GRAPH_TITLE, ...
                     "location","northeast",...
-                    "lineWidth",[1,1,1,1], ..."yLimit",[18 26],...
+                    "lineWidth",[2,2,2,2], ...
+                    "yLimit",[22 28],...
                     "isSave",FILE_IS_SAVE,"outDir",OUT_DIR_PATH, ...
-                    "fontSize",20,"LabelFontSize",30,"saveFileExt","jpg");
-%制御入力
-makeGraph(t',plotInputData , ...
-                    "lineName",CONTROLINPUT_LINE_NAME, ...
-                    "lineWidth",[1,1], ...
-                    "labelName",CONTROLINPUT_LABEL_NAME, ..."yLimit",[-0.8,1.6],...
-                    "location","northwest",...
-                    "graphName",CONTROLINPUT_GRAPH_TITLE, ...
-                    "isSave",FILE_IS_SAVE,"outDir",OUT_DIR_PATH, ...
-                    "fontSize",20,"LabelFontSize",30,"saveFileExt","jpg");
+                    "fontSize",20,"LabelFontSize",30,"saveFileExt","png");
+% %制御入力
+% makeGraph(t',plotInputData , ...
+%                     "lineName",CONTROLINPUT_LINE_NAME, ...
+%                     "lineWidth",[1,1], ...
+%                     "labelName",CONTROLINPUT_LABEL_NAME, ...
+%                     "yLimit",[-0.2,1.4],...
+%                     "location","northwest",...
+%                     "graphName",CONTROLINPUT_GRAPH_TITLE, ...
+%                     "isSave",FILE_IS_SAVE,"outDir",OUT_DIR_PATH, ...
+%                     "fontSize",20,"LabelFontSize",30,"saveFileExt","png");
 
 

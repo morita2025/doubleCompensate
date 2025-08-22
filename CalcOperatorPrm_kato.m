@@ -98,6 +98,8 @@ classdef CalcOperatorPrm_kato < handle
                 options.ki {mustBeNumeric} = [0; 0];
                 options.k {mustBeNumeric} = [1; 1];
                 options.p {mustBeNumeric} = 1;
+                options.p2 {mustBeNumeric} = 1;
+                options.tau {mustBeNumeric} = 5;
 
                 %current
                 options.i_max = 1;
@@ -252,26 +254,26 @@ classdef CalcOperatorPrm_kato < handle
 
 
             %G-----------------------------------------------------------------
-            G_a = zeros(3,1);
-            G_a(1,1) = obj.aluminum.thermalCond * obj.S(3,1) / obj.dx2;
-            G_a(2,1) = obj.aluminum.thermalCond * obj.S(3,1) / obj.dx13;%kaeteru itijiteki
-            G_a(3,1) = obj.aluminum.thermalCond * obj.S(3,1) / obj.dx2;
-            
-            G_w = zeros(3,1);
-            G_w(1,1) = obj.water.thermalCond * obj.S(5,1) / obj.dx2;
-            G_w(2,1) = 2 * obj.water.thermalCond * obj.S(5,1) / obj.dx13;
-            G_w(3,1) = obj.water.thermalCond * obj.S(5,1) / obj.dx2;
-            
-            G_aw = zeros(3,1);
-            G_aw(1,1) = obj.settings.heatTransferCoef_water * obj.S(6,1);
-            G_aw(2,1) = obj.settings.heatTransferCoef_water * obj.S(9,1);
-            G_aw(3,1) = obj.settings.heatTransferCoef_water * obj.S(6,1);
+            % G_a = zeros(3,1);
+            % G_a(1,1) = obj.aluminum.thermalCond * obj.S(3,1) / obj.dx2;
+            % G_a(2,1) = obj.aluminum.thermalCond * obj.S(3,1) / obj.dx13;%kaeteru itijiteki
+            % G_a(3,1) = obj.aluminum.thermalCond * obj.S(3,1) / obj.dx2;
+            % 
+            % G_w = zeros(3,1);
+            % G_w(1,1) = obj.water.thermalCond * obj.S(5,1) / obj.dx2;
+            % G_w(2,1) = 2 * obj.water.thermalCond * obj.S(5,1) / obj.dx13;
+            % G_w(3,1) = obj.water.thermalCond * obj.S(5,1) / obj.dx2;
+            % 
+            % G_aw = zeros(3,1);
+            % G_aw(1,1) = obj.settings.heatTransferCoef_water * obj.S(6,1);
+            % G_aw(2,1) = obj.settings.heatTransferCoef_water * obj.S(9,1);
+            % G_aw(3,1) = obj.settings.heatTransferCoef_water * obj.S(6,1);
              
             
             %unko
-            obj.G_a = G_a;
-            obj.G_w = G_w;
-            obj.G_aw = G_aw;
+            % obj.G_a = G_a;
+            % obj.G_w = G_w;
+            % obj.G_aw = G_aw;
             obj.ma_ca13 = m_a13 * obj.aluminum.specificHeat;
             obj.ma_ca2 = m_a2 * obj.aluminum.specificHeat;
             obj.mw_cw13 = m_omega13 * obj.water.specificHeat;
@@ -292,18 +294,18 @@ classdef CalcOperatorPrm_kato < handle
 
 
 
-            % a1 = (obj.water.thermalCond * obj.S(5) ) ./ (obj.settings.heatTransferCoef_water * obj.S(6) * [obj.dx13; obj.dx2; obj.dx13]);
-            % obj.MOperatorConstPrm = ones(3,1)./(ones(3,1)+a1); 
-            a1 = obj.settings.heatTransferCoef_water * obj.S(6) * [obj.dx13; obj.dx2; obj.dx13] + obj.water.thermalCond * obj.S(5);
-            a2 = obj.settings.heatTransferCoef_water * obj.S(6) * [obj.dx13; obj.dx2; obj.dx13];
-            obj.MOperatorConstPrm = a2./ a1;
+            a1 = (obj.water.thermalCond * obj.S(5) ) ./ (obj.settings.heatTransferCoef_water * obj.S(6) * obj.dxThermalCond );
+            obj.MOperatorConstPrm = ones(3,1)./(ones(3,1)+a1); 
+            % a1 = obj.settings.heatTransferCoef_water * obj.S(6) * dxThermalCond + obj.water.thermalCond * obj.S(5);
+            % a2 = obj.settings.heatTransferCoef_water * obj.S(6) * dxThermalCond;
+            % obj.MOperatorConstPrm = a2./ a1;
 
-            a1 = obj.settings.heatTransferCoef_water * obj.S(6) * [obj.dx13; obj.dx2; obj.dx13];
+            a1 = obj.settings.heatTransferCoef_water * obj.S(6) * obj.dxThermalCond;
             a2 = obj.water.thermalCond * obj.S(5);
 
             obj.tubeInterferrenceConstPrm = a1./ a2;
 
-            obj.lowPassFilterTimePrm =struct("N",5,"D",5,"p",options.p);
+            obj.lowPassFilterTimePrm =struct("N",options.tau,"D",options.tau,"p",options.p,"p2",options.p2);
 
             obj.peltierPrm = obj.peltier;
 

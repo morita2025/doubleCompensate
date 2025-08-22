@@ -22,6 +22,7 @@ function output_struct = getVariableFunction(length,ref)
     output_struct.r_02=zeros(3,length);
     output_struct.g=zeros(3,length);
     output_struct.f_2=zeros(3,length);
+    output_struct.y_asterisk=zeros(3,length);
     output_struct.y_a_asterisk=zeros(3,length);
     output_struct.tubeGairan=zeros(3,length);
     output_struct.almiGairan=zeros(3,length);

@@ -30,9 +30,14 @@ function [b,prevVariable] = B_inv(cycleCount,dt,e,prevVariable,prm)
         if prm.settings.isRugekuttaMethodUse == 1
             y_w = moritaRungekuttaMethod(@getNDxdt,cycleCount,dt,[prevVariable.x_1_prev,prevVariable.y_w_prev,zeros(3,1)],prm,0);
         end
+
+        %20250821追加
+        Aoutput=zeros(3,1);
+        Aoutput([1,3]) = prevVariable.instance.controllerA.calcNextCycle(y_w([1,3]));
          
         %M-1
-        x_2 = (1*prevVariable.y_w_prev + e) ./ prm.MOperatorConstPrm; 
+        % x_2 = (1*prevVariable.y_w_prev + e) ./ prm.MOperatorConstPrm; 
+        x_2 = (1*prevVariable.Aoutput_prev + e) ./ prm.MOperatorConstPrm; 
 
 
         %Q_D
@@ -73,6 +78,7 @@ function [b,prevVariable] = B_inv(cycleCount,dt,e,prevVariable,prm)
         prevVariable.x_1_prev=x_1;
         prevVariable.x_2_prev=x_2;
         prevVariable.x_3_prev=x_3;
+        prevVariable.Aoutput_prev=Aoutput;
         % prevVariable.x_debug_prev=x_debug;
         % prevVariable.x_debug2_prev=x_debug2;
         % prevVariable.x_debug3_prev=x_debug3;

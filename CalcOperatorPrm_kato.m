@@ -99,6 +99,7 @@ classdef CalcOperatorPrm_kato < handle
                 options.k {mustBeNumeric} = [1; 1];
                 options.p {mustBeNumeric} = 1;
                 options.p2 {mustBeNumeric} = 1;
+                options.p_A {mustBeNumeric} = 5;
                 options.tau {mustBeNumeric} = 5;
 
                 %current
@@ -305,7 +306,7 @@ classdef CalcOperatorPrm_kato < handle
 
             obj.tubeInterferrenceConstPrm = a1./ a2;
 
-            obj.lowPassFilterTimePrm =struct("N",options.tau,"D",options.tau,"p",options.p,"p2",options.p2);
+            obj.lowPassFilterTimePrm =struct("N",options.tau,"D",options.tau,"p",options.p,"p2",options.p2,"p_A",options.p_A);
 
             obj.peltierPrm = obj.peltier;
 

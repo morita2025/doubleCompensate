@@ -12,7 +12,7 @@ operatorTempVariable = struct("B_inv",struct("y_w_prev",zeros(3,1),"x_1_prev",ze
                           "N_tilde",struct("y_a_tilde",zeros(3,1)),...
                           "D_tilde_inv",struct( ),...
                           "disturbanceRejectionOperator",struct("y_w_prev",zeros(3,1),"y_a_tilde_prev",zeros(3,1),"y_a",zeros(3,1),...
-                                                                "invPlantStateVariable",zeros(3,2),"debug",zeros(3,2),...
+                                                                "invPlantStateVariableM",zeros(3,2),"debug",zeros(3,2),...
                                                                 "y_w_tilde_prev",zeros(3,1),"d_c_prev",zeros(3,1),"d_prev",zeros(3,1)));
 
 refTimePrm = 1/10;
@@ -22,6 +22,8 @@ variable.ref(:,refChangeTime:end)  = [5; 0; 5.5] .* ones(3,max_time-refChangeTim
 
 variable.tubeGairan([1,3],600:end) = -1;%*repmat(sin(0.01*t(1:402)),2,1);
 variable.almiGairan([1,3],800:end) = -1*ones(2,202);
+
+
 
 
 for cycleCount = 1:length(t)
@@ -84,7 +86,7 @@ for cycleCount = 1:length(t)
         %                 [variable.u(:,cycleCount),variable.y_a(:,cycleCount),variable.y(:,cycleCount)],...
         %                 prm,0);
         variable.y_f(:,cycleCount) = operatorTempVariable.disturbanceRejectionOperator.d_prev(:,1);
-        variable.y_g(:,cycleCount) = operatorTempVariable.disturbanceRejectionOperator.invPlantStateVariable(:,1);
+        variable.y_g(:,cycleCount) = operatorTempVariable.disturbanceRejectionOperator.invPlantStateVariableM(:,1);
         variable.y_v(:,cycleCount) = operatorTempVariable.disturbanceRejectionOperator.debug(:,1);
 
     end

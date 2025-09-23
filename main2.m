@@ -5,8 +5,8 @@ dt = 1;
 t = 0:dt:max_time;
 ref = [4; 4.5];
 
-prm =  CalcOperatorPrm_kato(outsideTemperature=28,max_time=max_time,i_max=2,i_min=0,heatTransferCoef_water=270,tau=30,p=1/30,p2=0.15,...
-                           isRugekuttaMethodUse=1,isInterferrence=true,isD1Compensate=true,isD2Compensate=false);
+prm =  CalcOperatorPrm_kato(outsideTemperature=28,max_time=max_time,i_max=2,i_min=0,heatTransferCoef_water=270,tau=30,p=0.15,p2=0.15,...
+                           isRugekuttaMethodUse=1,isInterferrence=true,isD1Compensate=true,isD2Compensate=true);
 variable= getVariableFunction(length(t),ref);
 operatorTempVariable = struct("B_inv",struct("y_w_prev",zeros(3,1),"x_1_prev",zeros(3,1),"x_2_prev",zeros(3,1),"x_3_prev",zeros(3,1),"x_debug_prev",zeros(3,1),"x_debug2_prev",zeros(3,1),"x_debug3_prev",zeros(3,1)),...
                           "N_tilde",struct("y_a_tilde",zeros(3,1)),...
@@ -21,10 +21,33 @@ refChangeTime = 400;
 variable.ref(:,:) = [ref(1); 0; ref(2)].* (1 - exp(-refTimePrm*t)  );
 % variable.ref(:,refChangeTime:end)  = [5; 0; 5.5] .* ones(3,max_time-refChangeTime+2);
 
+
+%測定ノイズ
+variable.tubeNoise = 0.08*randn(size(variable.tubeGairan));
+variable.almiNoise = 0*0.08*randn(size(variable.tubeGairan));
+
 % variable.tubeGairan([1,3],400:end) = -0.5;
 variable.tubeGairan([1,3],800:end) = -1;
+
 variable.almiGairan([1,3],450:end) = -0.5;
-variable.almiGairan([1,3],800:end) = -1;
+% variable.almiGairan([1,3],800:end) = -1;
+
+
+%ノイズにローパスをかけてみる
+% カットオフ周波数
+fc = 0.05;            % カットオフ周波数 [Hz]
+Wn = fc / (dt/2);    % 正規化カットオフ周波数
+% フィルタ設計 (バターワース 4次)
+[b, a] = butter(4, Wn, 'low');
+% フィルタ適用 (ゼロ位相)
+for i=1:3
+    variable.tubeNoise(i,:) = filtfilt(b, a, variable.tubeNoise(i,:));
+    variable.almiNoise(i,:) = filtfilt(b, a, variable.almiNoise(i,:));
+end
+
+variable.almiGairan = variable.almiGairan +variable.almiNoise;
+variable.tubeGairan = variable.tubeGairan +variable.tubeNoise;
+
 
 
 for cycleCount = 1:length(t)
@@ -148,9 +171,9 @@ end
 
 % makeGraph
 FILE_IS_SAVE=false;
-graphToolPath="C:\Users\mykot\OneDrive - Tokyo University of Agriculture and Technology (1)\60MATLAB_sagyou\makeGraph";
+graphToolPath="C:\Users\mykot\OneDrive - Tokyo University of Agriculture and Technology\60MATLAB_sagyou\makeGraph";
 addpath(graphToolPath);
-DATA_DIR_PATH = "C:\Users\mykot\OneDrive - Tokyo University of Agriculture and Technology\40発表ゼミ\jisaku\figure\2025_5_19\"; %exp 
+DATA_DIR_PATH = "C:\Users\mykot\OneDrive - Tokyo University of Agriculture and Technology (1)\40発表ゼミ\jisaku\figure\2025_5_19\"; %exp 
 OUT_DIR_PATH = "C:\Users\mykot\OneDrive - Tokyo University of Agriculture and Technology (1)\40発表ゼミ\jisaku\figure\2025_7_20\";
 TEMPERATURE_GRAPH_TITLE = ["gairan"];
 TEMPERATURE_LINE_NAME = ["$T_{0}-r_1$","$T_{0}-r_3$","$\mathrm{Part} \mathrm{W_1}$","$$\mathrm{Part} \mathrm{W_3}$"];
@@ -170,7 +193,7 @@ makeGraph(t',plotTempData, ...
                     "labelName",TEMPERATURE_LABEL_NAME, ...
                     "graphName",TEMPERATURE_GRAPH_TITLE, ...
                     "location","northeast",...
-                    "lineWidth",[2,2,2,2], ...
+                    "lineWidth",0.7*[2,2,2,2], ...%[2,2,2,2], ...
                     "yLimit",[22 28],...
                     "isSave",FILE_IS_SAVE,"outDir",OUT_DIR_PATH, ...
                     "fontSize",20,"LabelFontSize",30,"saveFileExt","png");

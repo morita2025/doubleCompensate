@@ -28,16 +28,15 @@ variable.ref(:,:) = [ref(1); 0; ref(2)].* (1 - exp(-refTimePrm*t)  );
 
 %測定ノイズ
 variable.tubeNoise = 0.02*randn(size(variable.tubeGairan));
-variable.almiNoise = 0.02*randn(size(variable.tubeGairan));
+variable.tubeNoise = 0.02*randn(size(variable.tubeGairan));
+
 
 % variable.tubeGairan([1,3],400:end) = -0.5;
 variable.tubeGairan([1,3],800:end) = -1;
+variable.tubeGairan([1,3],800:end) = variable.tubeGairan([1,3],800:end) + 0.02*randn(size(variable.tubeGairan([1,3],800:end)));
 
 variable.almiGairan([1,3],450:end) = -0.5;
 % variable.almiGairan([1,3],800:end) = -1;
-
-variable.almiGairan = variable.almiGairan +variable.almiNoise;
-variable.tubeGairan = variable.tubeGairan +variable.tubeNoise;
 
 
 

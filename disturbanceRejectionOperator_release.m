@@ -25,6 +25,7 @@ function [f_1, f_2, prev_variable] = disturbanceRejectionOperator_release(cycleC
         Aoutput=zeros(3,1);
         if prm.settings.isD2Compensate
             Aoutput([1,3]) = prev_variable.instance.controllerA.calcNextCycle(f1Noutput([1,3])+ g([1,3]));
+            prev_variable.instance.controllerA.comment = cycleCount;
         else
             Aoutput([1,3]) = prev_variable.instance.controllerA.calcNextCycle(f1Noutput([1,3]));
         end

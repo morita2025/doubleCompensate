@@ -35,7 +35,7 @@ variable.almiGairan([1,3],450:end) = -0.5;
 
 %ノイズにローパスをかけてみる
 % カットオフ周波数
-fc = 0.05;            % カットオフ周波数 [Hz]
+fc = 0.2;            % カットオフ周波数 [Hz]
 Wn = fc / (dt/2);    % 正規化カットオフ周波数
 % フィルタ設計 (バターワース 4次)
 [b, a] = butter(4, Wn, 'low');
@@ -45,8 +45,8 @@ for i=1:3
     variable.almiNoise(i,:) = filtfilt(b, a, variable.almiNoise(i,:));
 end
 
-variable.almiGairan = variable.almiGairan +variable.almiNoise;
-variable.tubeGairan = variable.tubeGairan +variable.tubeNoise;
+% variable.almiGairan = variable.almiGairan +variable.almiNoise;
+% variable.tubeGairan = variable.tubeGairan +variable.tubeNoise;
 
 
 
@@ -171,7 +171,7 @@ end
 
 % makeGraph
 FILE_IS_SAVE=false;
-graphToolPath="C:\Users\mykot\OneDrive - Tokyo University of Agriculture and Technology\60MATLAB_sagyou\makeGraph";
+graphToolPath="C:\Users\mykot\OneDrive - Tokyo University of Agriculture and Technology (1)\60MATLAB_sagyou\makeGraph";
 addpath(graphToolPath);
 DATA_DIR_PATH = "C:\Users\mykot\OneDrive - Tokyo University of Agriculture and Technology (1)\40発表ゼミ\jisaku\figure\2025_5_19\"; %exp 
 OUT_DIR_PATH = "C:\Users\mykot\OneDrive - Tokyo University of Agriculture and Technology (1)\40発表ゼミ\jisaku\figure\2025_7_20\";

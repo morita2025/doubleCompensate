@@ -6,7 +6,7 @@ t = 0:dt:max_time;
 ref = [4; 4.5];
 addpath(pwd + "\Abstract\")
 
-prm =  CalcOperatorPrm_kato(outsideTemperature=28,max_time=max_time,i_max=2,i_min=0,heatTransferCoef_water=270,tau=30,p=0.90,p2=0.15,p_A=1,...
+prm =  CalcOperatorPrm_kato(outsideTemperature=28,max_time=max_time,i_max=2,i_min=0,heatTransferCoef_water=270,tau=30,p=0.2,p2=0.15,p_A=1,...
                            isRugekuttaMethodUse=1,isInterferrence=true,isD1Compensate=true,isD2Compensate=true);
 variable= getVariableFunction(length(t),ref);
 operatorTempVariable = struct("B_inv",struct("y_w_prev",zeros(3,1),"x_1_prev",zeros(3,1),"x_2_prev",zeros(3,1),"Aoutput_prev",zeros(3,1),...
@@ -27,19 +27,19 @@ variable.ref(:,:) = [ref(1); 0; ref(2)].* (1 - exp(-refTimePrm*t)  );
 % variable.ref(:,refChangeTime:end)  = [5; 0; 5.5] .* ones(3,max_time-refChangeTime+2);
 
 %測定ノイズ(100Hzサンプリング)
-tubeNoise = 0.15*randn(3,100*length(variable.tubeGairan));
-almiNoise = 0.15*randn(3,100*length(variable.tubeGairan));
+tubeNoise = 0*1.5*0.15*randn(3,100*length(variable.tubeGairan));
+almiNoise = 0*0.15*randn(3,100*length(variable.tubeGairan));
 
 % variable.tubeGairan([1,3],400:end) = -0.5;
-variable.tubeGairan([1,3],800:end) = -1;
+variable.tubeGairan([1,3],800:end) = 0*-1;
 
-variable.almiGairan([1,3],450:end) = -0.5;
+variable.almiGairan([1,3],450:end) = 0*-0.5;
 % variable.almiGairan([1,3],800:end) = -1;
 
 
 %ノイズにローパスをかけてみる
 % カットオフ周波数
-fc = 5;            % カットオフ周波数 [Hz]
+fc = 10;            % カットオフ周波数 [Hz]
 Wn = fc / (dt/2*100);    % 正規化カットオフ周波数
 % フィルタ設計 (バターワース 4次)
 [b, a] = butter(4, Wn, 'low');
@@ -79,7 +79,7 @@ for cycleCount = 1:length(t)
         variable.r_02(:,cycleCount) = variable.r_01(:,cycleCount) + variable.f_1(:,cycleCount);
 
         variable.b([1,3],cycleCount) =  instanceA.calcNextCycle(variable.y([1,3],cycleCount));
-        variable.e(:,cycleCount) =  variable.r_02(:,cycleCount) -variable.b(:,cycleCount);  
+        variable.e(:,cycleCount) = variable.r_02(:,cycleCount) -variable.b(:,cycleCount);  
 
 
         [variable.u(:,cycleCount), operatorTempVariable.B_inv] = B_inv(cycleCount,dt,...
@@ -141,7 +141,7 @@ for cycleCount = 1:length(t)
     % Aoutput(:,cycleCount) = instanceInvQF1.calcNextCycle(variable.y_g([1,3],cycleCount+1));
 end
 
-% plot(Aoutput(2,:))
+% plot(variable.y(1,:))
 
 
 
@@ -196,7 +196,7 @@ else
 end
 
 
-% makeGraph
+% % makeGraph
 FILE_IS_SAVE=false;
 graphToolPath="C:\Users\mykot\OneDrive - Tokyo University of Agriculture and Technology\60MATLAB_sagyou\makeGraph";
 addpath(graphToolPath);

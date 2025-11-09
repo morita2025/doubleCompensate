@@ -5,7 +5,7 @@ dt = 1;
 t = 0:dt:max_time;
 ref = [4; 4.5];
 
-prm =  CalcOperatorPrm_kato(outsideTemperature=28,max_time=max_time,i_max=2,i_min=0,heatTransferCoef_water=270,tau=30,p=0.15,p2=0.15,...
+prm =  CalcOperatorPrm_kato(outsideTemperature=28,max_time=max_time,i_max=2,i_min=0,heatTransferCoef_water=270,tau=30,p=0.1,p2=0.1,...
                            isRugekuttaMethodUse=1,isInterferrence=true,isD1Compensate=true,isD2Compensate=true);
 variable= getVariableFunction(length(t),ref);
 operatorTempVariable = struct("B_inv",struct("y_w_prev",zeros(3,1),"x_1_prev",zeros(3,1),"x_2_prev",zeros(3,1),"x_3_prev",zeros(3,1),"x_debug_prev",zeros(3,1),"x_debug2_prev",zeros(3,1),"x_debug3_prev",zeros(3,1)),...
@@ -24,26 +24,26 @@ variable.ref(:,:) = [ref(1); 0; ref(2)].* (1 - exp(-refTimePrm*t)  );
 
 %測定ノイズ
 variable.tubeNoise = 0.08*randn(size(variable.tubeGairan));
-variable.almiNoise = 0*0.08*randn(size(variable.tubeGairan));
+variable.almiNoise = 0.08*randn(size(variable.tubeGairan));
 
-% variable.tubeGairan([1,3],400:end) = -0.5;
+variable.tubeGairan([1,3],400:end) = -0.5;
 variable.tubeGairan([1,3],800:end) = -1;
 
-variable.almiGairan([1,3],450:end) = -0.5;
+% variable.almiGairan([1,3],450:end) = -0.5;
 % variable.almiGairan([1,3],800:end) = -1;
 
 
-%ノイズにローパスをかけてみる
-% カットオフ周波数
-fc = 0.2;            % カットオフ周波数 [Hz]
-Wn = fc / (dt/2);    % 正規化カットオフ周波数
-% フィルタ設計 (バターワース 4次)
-[b, a] = butter(4, Wn, 'low');
-% フィルタ適用 (ゼロ位相)
-for i=1:3
-    variable.tubeNoise(i,:) = filtfilt(b, a, variable.tubeNoise(i,:));
-    variable.almiNoise(i,:) = filtfilt(b, a, variable.almiNoise(i,:));
-end
+% %ノイズにローパスをかけてみる
+% % カットオフ周波数
+% fc = 1;            % カットオフ周波数 [Hz]
+% Wn = fc / (dt/2);    % 正規化カットオフ周波数
+% % フィルタ設計 (バターワース 4次)
+% [b, a] = butter(4, Wn, 'low');
+% % フィルタ適用 (ゼロ位相)
+% for i=1:3
+%     variable.tubeNoise(i,:) = filtfilt(b, a, variable.tubeNoise(i,:));
+%     variable.almiNoise(i,:) = filtfilt(b, a, variable.almiNoise(i,:));
+% end
 
 % variable.almiGairan = variable.almiGairan +variable.almiNoise;
 % variable.tubeGairan = variable.tubeGairan +variable.tubeNoise;
@@ -197,15 +197,15 @@ makeGraph(t',plotTempData, ...
                     "yLimit",[22 28],...
                     "isSave",FILE_IS_SAVE,"outDir",OUT_DIR_PATH, ...
                     "fontSize",20,"LabelFontSize",30,"saveFileExt","png");
-% %制御入力
-% makeGraph(t',plotInputData , ...
-%                     "lineName",CONTROLINPUT_LINE_NAME, ...
-%                     "lineWidth",[1,1], ...
-%                     "labelName",CONTROLINPUT_LABEL_NAME, ...
-%                     "yLimit",[-0.2,1.4],...
-%                     "location","northwest",...
-%                     "graphName",CONTROLINPUT_GRAPH_TITLE, ...
-%                     "isSave",FILE_IS_SAVE,"outDir",OUT_DIR_PATH, ...
-%                     "fontSize",20,"LabelFontSize",30,"saveFileExt","png");
+%制御入力
+makeGraph(t',plotInputData , ...
+                    "lineName",CONTROLINPUT_LINE_NAME, ...
+                    "lineWidth",[1,1], ...
+                    "labelName",CONTROLINPUT_LABEL_NAME, ...
+                    "yLimit",[-0.2,1.4],...
+                    "location","northwest",...
+                    "graphName",CONTROLINPUT_GRAPH_TITLE, ...
+                    "isSave",FILE_IS_SAVE,"outDir",OUT_DIR_PATH, ...
+                    "fontSize",20,"LabelFontSize",30,"saveFileExt","png");
 
 

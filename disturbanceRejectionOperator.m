@@ -13,25 +13,25 @@ function [f_1, f_2, prev_variable] = disturbanceRejectionOperator(cycleCount,dt,
         g = y - y_w_tilde;
 
         % 旧M(F1が1次遅れ) 
-        % plantStateVariableM = prev_variable.invPlantStateVariableM;
-        %    if prm.settings.isRugekuttaMethodUse == 0
-        %         dxdt2 = -prm.lowPassFilterTimePrm.p * plantStateVariableM(:,1) + prm.lowPassFilterTimePrm.p * d1_hat;
-        %    else
-        %         k1 = -prm.lowPassFilterTimePrm.p * plantStateVariableM(:,1) + prm.lowPassFilterTimePrm.p * d1_hat;
-        %         k2 = -prm.lowPassFilterTimePrm.p * (0.5*dt*k1 + plantStateVariableM(:,1)) + prm.lowPassFilterTimePrm.p * d1_hat;
-        %         k3 = -prm.lowPassFilterTimePrm.p * (0.5*dt*k2 + plantStateVariableM(:,1)) + prm.lowPassFilterTimePrm.p * d1_hat;
-        %         k4 = -prm.lowPassFilterTimePrm.p * (dt*k3 + plantStateVariableM(:,1)) + prm.lowPassFilterTimePrm.p * d1_hat;
-        %         dxdt2 = (k1 + 2*k2 + 2*k3 +k4) /6;
-        %    end
-        % f_m = prm.lowPassFilterTimePrm.D.* dt*dxdt2 +plantStateVariableM(:,1);
-        % plantStateVariableM(:,1) = dxdt2*dt + plantStateVariableM(:,1);
-        % f_m = f_m .* prm.MOperatorConstPrm;
+        plantStateVariableM = prev_variable.invPlantStateVariableM;
+           if prm.settings.isRugekuttaMethodUse == 0
+                dxdt2 = -prm.lowPassFilterTimePrm.p * plantStateVariableM(:,1) + prm.lowPassFilterTimePrm.p * d1_hat;
+           else
+                k1 = -prm.lowPassFilterTimePrm.p * plantStateVariableM(:,1) + prm.lowPassFilterTimePrm.p * d1_hat;
+                k2 = -prm.lowPassFilterTimePrm.p * (0.5*dt*k1 + plantStateVariableM(:,1)) + prm.lowPassFilterTimePrm.p * d1_hat;
+                k3 = -prm.lowPassFilterTimePrm.p * (0.5*dt*k2 + plantStateVariableM(:,1)) + prm.lowPassFilterTimePrm.p * d1_hat;
+                k4 = -prm.lowPassFilterTimePrm.p * (dt*k3 + plantStateVariableM(:,1)) + prm.lowPassFilterTimePrm.p * d1_hat;
+                dxdt2 = (k1 + 2*k2 + 2*k3 +k4) /6;
+           end
+        f_m = prm.lowPassFilterTimePrm.D.* dt*dxdt2 +plantStateVariableM(:,1);
+        plantStateVariableM(:,1) = dxdt2*dt + plantStateVariableM(:,1);
+        f_m = f_m .* prm.MOperatorConstPrm;
         % plantStateVariableM(:,2) = f_m;
 
         %20250826　新M (F1が2次遅れ)
-        plantStateVariableInvQF1 = zeros(3,1);
-        plantStateVariableInvQF1([1,3]) = prev_variable.instance.controllerinvQF1.calcNextCycle(d1_hat([1,3]));
-        f_m = prm.MOperatorConstPrm .* plantStateVariableInvQF1;
+        % plantStateVariableInvQF1 = zeros(3,1);
+        % plantStateVariableInvQF1([1,3]) = prev_variable.instance.controllerinvQF1.calcNextCycle(d1_hat([1,3]));
+        % f_m = prm.MOperatorConstPrm .* plantStateVariableInvQF1;
 
 
 

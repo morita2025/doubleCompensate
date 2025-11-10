@@ -4,21 +4,16 @@ max_time = 1200;
 dt = 1;
 t = 0:dt:max_time;
 ref = [4; 4.5];
-addpath(pwd + "\Abstract\")
 
-prm =  CalcOperatorPrm_kato(outsideTemperature=28,max_time=max_time,i_max=2,i_min=0,heatTransferCoef_water=270,tau=30,p=0.2,p2=0.15,p_A=1,...
+prm =  CalcOperatorPrm_kato(outsideTemperature=28,max_time=max_time,i_max=2,i_min=0,heatTransferCoef_water=270,tau=30,p=0.1,p2=0.1,...
                            isRugekuttaMethodUse=1,isInterferrence=true,isD1Compensate=true,isD2Compensate=true);
 variable= getVariableFunction(length(t),ref);
-operatorTempVariable = struct("B_inv",struct("y_w_prev",zeros(3,1),"x_1_prev",zeros(3,1),"x_2_prev",zeros(3,1),"Aoutput_prev",zeros(3,1),...
-                                            "x_3_prev",zeros(3,1),"x_debug_prev",zeros(3,1),"x_debug2_prev",zeros(3,1),"x_debug3_prev",zeros(3,1),...
-                                            "instance",struct("controllerA",ControllerA(prm=prm,dt=dt,cycleNum=length(t)))),...
+operatorTempVariable = struct("B_inv",struct("y_w_prev",zeros(3,1),"x_1_prev",zeros(3,1),"x_2_prev",zeros(3,1),"x_3_prev",zeros(3,1),"x_debug_prev",zeros(3,1),"x_debug2_prev",zeros(3,1),"x_debug3_prev",zeros(3,1)),...
                           "N_tilde",struct("y_a_tilde",zeros(3,1)),...
                           "D_tilde_inv",struct( ),...
                           "disturbanceRejectionOperator",struct("y_w_prev",zeros(3,1),"y_a_tilde_prev",zeros(3,1),"y_a",zeros(3,1),...
                                                                 "invPlantStateVariable",zeros(3,2),"invPlantStateVariableM",zeros(3,2),"debug",zeros(3,2),...
-                                                                "g",zeros(3,1),"Aoutput_prev",zeros(3,1),...
-                                                                "instance",struct("controllerA",ControllerA(prm=prm,dt=dt,cycleNum=length(t)),"controllerinvQF1",ControllerinvQF1(prm=prm,dt=dt,cycleNum=length(t)),...
-                                                                "controllerinvTildeNF2",ControllerinvTildeNF2(prm=prm,dt=dt,cycleNum=length(t))),...
+                                                                "g",zeros(3,1),...
                                                                 "y_w_tilde_prev",zeros(3,1),"d_c_prev",zeros(3,1),"d_prev",zeros(3,1)));
 
 refTimePrm = 1/10;
@@ -26,41 +21,32 @@ refChangeTime = 400;
 variable.ref(:,:) = [ref(1); 0; ref(2)].* (1 - exp(-refTimePrm*t)  );
 % variable.ref(:,refChangeTime:end)  = [5; 0; 5.5] .* ones(3,max_time-refChangeTime+2);
 
-%測定ノイズ(100Hzサンプリング)
-tubeNoise = 0*1.5*0.15*randn(3,100*length(variable.tubeGairan));
-almiNoise = 0*0.15*randn(3,100*length(variable.tubeGairan));
 
-% variable.tubeGairan([1,3],400:end) = -0.5;
-variable.tubeGairan([1,3],800:end) = 0*-1;
+%測定ノイズ
+variable.tubeNoise = 0.08*randn(size(variable.tubeGairan));
+variable.almiNoise = 0.08*randn(size(variable.tubeGairan));
 
-variable.almiGairan([1,3],450:end) = 0*-0.5;
+variable.tubeGairan([1,3],400:end) = -0.5;
+variable.tubeGairan([1,3],800:end) = -1;
+
+% variable.almiGairan([1,3],450:end) = -0.5;
 % variable.almiGairan([1,3],800:end) = -1;
 
 
-%ノイズにローパスをかけてみる
-% カットオフ周波数
-fc = 10;            % カットオフ周波数 [Hz]
-Wn = fc / (dt/2*100);    % 正規化カットオフ周波数
-% フィルタ設計 (バターワース 4次)
-[b, a] = butter(4, Wn, 'low');
-% フィルタ適用 (ゼロ位相)
-for i=1:3
-    tubeNoise(i,:) = filtfilt(b, a, tubeNoise(i,:));
-    variable.tubeNoise(i,:) = transpose(downsample(transpose(tubeNoise(i,:)),100));
-    almiNoise(i,:) = filtfilt(b, a, almiNoise(i,:));
-    variable.almiNoise(i,:) = transpose(downsample(transpose(almiNoise(i,:)),100));
-end
+% %ノイズにローパスをかけてみる
+% % カットオフ周波数
+% fc = 1;            % カットオフ周波数 [Hz]
+% Wn = fc / (dt/2);    % 正規化カットオフ周波数
+% % フィルタ設計 (バターワース 4次)
+% [b, a] = butter(4, Wn, 'low');
+% % フィルタ適用 (ゼロ位相)
+% for i=1:3
+%     variable.tubeNoise(i,:) = filtfilt(b, a, variable.tubeNoise(i,:));
+%     variable.almiNoise(i,:) = filtfilt(b, a, variable.almiNoise(i,:));
+% end
 
-variable.almiGairan = variable.almiGairan +1*variable.almiNoise;
-variable.tubeGairan = variable.tubeGairan +1*variable.tubeNoise;
-
-
-%Aインスタンス実験
-instanceInvQF1 = ControllerinvQF1(prm=prm,dt=dt,cycleNum=length(t)); 
-instanceInvTildeNF2 = ControllerinvTildeNF2(prm=prm,dt=dt,cycleNum=length(t)); 
-instanceA = ControllerA(prm=prm,dt=dt,cycleNum=length(t)); 
-
-
+variable.almiGairan = variable.almiGairan +variable.almiNoise;
+variable.tubeGairan = variable.tubeGairan +variable.tubeNoise;
 
 
 
@@ -69,7 +55,7 @@ for cycleCount = 1:length(t)
 
         % 外乱除去制御系
         if cycleCount >1
-            [variable.f_1(:,cycleCount), variable.f_2(:,cycleCount), operatorTempVariable.disturbanceRejectionOperator] = disturbanceRejectionOperator_release(cycleCount,dt,...
+            [variable.f_1(:,cycleCount), variable.f_2(:,cycleCount), operatorTempVariable.disturbanceRejectionOperator] = disturbanceRejectionOperator(cycleCount,dt,...
                     [variable.y_a(:,cycleCount),variable.u(:,cycleCount-1),variable.y(:,cycleCount)],operatorTempVariable.disturbanceRejectionOperator,...
                     prm);
         end
@@ -78,8 +64,8 @@ for cycleCount = 1:length(t)
         variable.r_01(:,cycleCount) = variable.ref(:,cycleCount) - variable.f_2(:,cycleCount);
         variable.r_02(:,cycleCount) = variable.r_01(:,cycleCount) + variable.f_1(:,cycleCount);
 
-        variable.b([1,3],cycleCount) =  instanceA.calcNextCycle(variable.y([1,3],cycleCount));
-        variable.e(:,cycleCount) = variable.r_02(:,cycleCount) -variable.b(:,cycleCount);  
+        variable.b(:,cycleCount) =  variable.y(:,cycleCount);
+        variable.e(:,cycleCount) =  variable.r_02(:,cycleCount) -variable.b(:,cycleCount);  
 
 
         [variable.u(:,cycleCount), operatorTempVariable.B_inv] = B_inv(cycleCount,dt,...
@@ -116,35 +102,22 @@ for cycleCount = 1:length(t)
         %         prm,0);
 
         %% NM^{-1}
-        u_ast = M(cycleCount,dt,variable.ref(:,cycleCount),prm);
-        variable.y_f(:,cycleCount+1) = N(cycleCount,dt,...
-                [u_ast,variable.y_f(:,cycleCount),zeros(3,1)],...
-                prm);
-        % variable.y_g(:,cycleCount+1) = moritaRungekuttaMethod(@getQ_nDxdt,cycleCount,dt,[variable.y_f(:,cycleCount+1),variable.y_g(:,cycleCount),zeros(3,1)],prm,0);
+        % u_ast = M(cycleCount,dt,variable.ref(:,cycleCount),prm);
+        % variable.y_f(:,cycleCount+1) = N(cycleCount,dt,...
+        %         [u_ast,variable.y_f(:,cycleCount),zeros(3,1)],...
+        %         prm);
 
         %% debug
         % y_a_dot = getD_invDxdt(cycleCount,dt,...
         %                 [variable.u(:,cycleCount),variable.y_a(:,cycleCount),variable.y(:,cycleCount)],...
         %                 prm,0);
         variable.y_f(:,cycleCount) = operatorTempVariable.disturbanceRejectionOperator.d_prev(:,1);
-        % variable.y_g(:,cycleCount) = operatorTempVariable.disturbanceRejectionOperator.invPlantStateVariable(:,1);
-        % variable.y_v(:,cycleCount) = operatorTempVariable.disturbanceRejectionOperator.debug(:,1);
+        variable.y_g(:,cycleCount) = operatorTempVariable.disturbanceRejectionOperator.invPlantStateVariable(:,1);
+        variable.y_v(:,cycleCount) = operatorTempVariable.disturbanceRejectionOperator.debug(:,1);
         variable.y_h(:,cycleCount) = operatorTempVariable.disturbanceRejectionOperator.g(:,1);
 
     end
-
-
-
-    %Aの実験
-    % Aoutput(:,cycleCount) = instanceInvQF1.calcNextCycle([1;1]);
-    % variable.y_g(:,cycleCount+1) = moritaRungekuttaMethod(@getQ_nDxdt,cycleCount,dt,[[1;0;1],variable.y_g(:,cycleCount),zeros(3,1)],prm,0);
-    % Aoutput(:,cycleCount) = instanceInvQF1.calcNextCycle(variable.y_g([1,3],cycleCount+1));
 end
-
-% plot(variable.y(1,:))
-
-
-
 % plot(variable.y_g(1,:),"Color","b","LineWidth",2)
 % hold on
 % plot(variable.y_v(1,:))
@@ -179,9 +152,9 @@ plotInputData = inputData;
 %% plot
 
 
-isExperimentGraph = false;
+isExperimentGraph = true;
 if isExperimentGraph % makeGraphの上書き
-    load("C:\Users\mykot\OneDrive - Tokyo University of Agriculture and Technology (1)\60MATLAB_sagyou\MicroreactorSystem2_morita\data\20250714_kato_5.mat");
+    load("C:\Users\mykot\OneDrive - Tokyo University of Agriculture and Technology\60MATLAB_sagyou\MicroreactorSystem2_morita\data\20250714_kato_5.mat");
     tempData = data.temperature.sens(5:end,[1,3]);
     timeData = data.time(5:end,:);
     RefData = data.temperature.ref(4:end,:);
@@ -196,7 +169,7 @@ else
 end
 
 
-% % makeGraph
+% makeGraph
 FILE_IS_SAVE=false;
 graphToolPath="C:\Users\mykot\OneDrive - Tokyo University of Agriculture and Technology\60MATLAB_sagyou\makeGraph";
 addpath(graphToolPath);
@@ -220,11 +193,11 @@ makeGraph(t',plotTempData, ...
                     "labelName",TEMPERATURE_LABEL_NAME, ...
                     "graphName",TEMPERATURE_GRAPH_TITLE, ...
                     "location","northeast",...
-                    "lineWidth",0.7*[2,2,2,2], ...[2,2,2,2], ...
+                    "lineWidth",0.7*[2,2,2,2], ...%[2,2,2,2], ...
                     "yLimit",[22 28],...
                     "isSave",FILE_IS_SAVE,"outDir",OUT_DIR_PATH, ...
                     "fontSize",20,"LabelFontSize",30,"saveFileExt","png");
-% %制御入力
+%制御入力
 makeGraph(t',plotInputData , ...
                     "lineName",CONTROLINPUT_LINE_NAME, ...
                     "lineWidth",[1,1], ...

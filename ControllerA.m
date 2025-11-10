@@ -6,6 +6,7 @@ classdef ControllerA < Operator & Integrator & handle
     end
 
     properties (SetAccess = public, GetAccess = public) 
+        input13
     end
 
     methods
@@ -26,12 +27,13 @@ classdef ControllerA < Operator & Integrator & handle
         end
         
         function dxdt = getDxdt(obj,input13,tStateVariable)
+            obj.input13 =input13;
             dxdt = 1 ./ obj.prm.lowPassFilterTimePrm.p_A .* (-tStateVariable +input13);
         end
 
         function operatorOutput =  calcNextCycle(obj,ya13)
             obj.stateVariable = cMoritaRungeKuttaMethod(obj,ya13);
-            operatorOutput = obj.stateVariable;
+            operatorOutput = obj.input13;%obj.stateVariable;
         end
 
     end

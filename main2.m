@@ -5,8 +5,8 @@ dt = 1;
 t = 0:dt:max_time;
 ref = [4; 4.5];
 
-prm =  CalcOperatorPrm_kato(outsideTemperature=28,max_time=max_time,i_max=2,i_min=0,heatTransferCoef_water=270,tau=30,p=0.1,p2=0.1,...
-                           isRugekuttaMethodUse=1,isInterferrence=true,isD1Compensate=true,isD2Compensate=true);
+prm =  CalcOperatorPrm_kato(outsideTemperature=28,max_time=max_time,i_max=2,i_min=0,heatTransferCoef_water=270,tau=30,p=0.15,p2=0.15,...
+                           isRugekuttaMethodUse=1,isInterferrence=true,isD1Compensate=true,isD2Compensate=false);
 variable= getVariableFunction(length(t),ref);
 operatorTempVariable = struct("B_inv",struct("y_w_prev",zeros(3,1),"x_1_prev",zeros(3,1),"x_2_prev",zeros(3,1),"x_3_prev",zeros(3,1),"x_debug_prev",zeros(3,1),"x_debug2_prev",zeros(3,1),"x_debug3_prev",zeros(3,1)),...
                           "N_tilde",struct("y_a_tilde",zeros(3,1)),...
@@ -26,10 +26,10 @@ variable.ref(:,:) = [ref(1); 0; ref(2)].* (1 - exp(-refTimePrm*t)  );
 variable.tubeNoise = 0.08*randn(size(variable.tubeGairan));
 variable.almiNoise = 0.08*randn(size(variable.tubeGairan));
 
-variable.tubeGairan([1,3],400:end) = -0.5;
+% variable.tubeGairan([1,3],400:end) = -0.5;
 variable.tubeGairan([1,3],800:end) = -1;
 
-% variable.almiGairan([1,3],450:end) = -0.5;
+variable.almiGairan([1,3],450:end) = -0.5;
 % variable.almiGairan([1,3],800:end) = -1;
 
 
@@ -154,7 +154,7 @@ plotInputData = inputData;
 
 isExperimentGraph = false;
 if isExperimentGraph % makeGraphの上書き
-    load("C:\Users\mykot\OneDrive - Tokyo University of Agriculture and Technology\60MATLAB_sagyou\MicroreactorSystem2_morita\data\20250714_kato_5.mat");
+    load("C:\Users\mykot\OneDrive - Tokyo University of Agriculture and Technology\60MATLAB_sagyou\MicroreactorSystem2_morita\data\20251110_tau_30_p1_022_p2_022.mat");
     tempData = data.temperature.sens(5:end,[1,3]);
     timeData = data.time(5:end,:);
     RefData = data.temperature.ref(4:end,:);
@@ -174,15 +174,15 @@ FILE_IS_SAVE=false;
 graphToolPath="C:\Users\mykot\OneDrive - Tokyo University of Agriculture and Technology\60MATLAB_sagyou\makeGraph";
 addpath(graphToolPath);
 DATA_DIR_PATH = "C:\Users\mykot\OneDrive - Tokyo University of Agriculture and Technology\40発表ゼミ\jisaku\figure\2025_5_19\"; %exp 
-OUT_DIR_PATH = "C:\Users\mykot\OneDrive - Tokyo University of Agriculture and Technology\40発表ゼミ\jisaku\figure\2025_7_20\";
-TEMPERATURE_GRAPH_TITLE = ["gairan"];
+OUT_DIR_PATH = "C:\Users\mykot\OneDrive - Tokyo University of Agriculture and Technology\40発表ゼミ\jisaku\figure\2025_11_11\";
+TEMPERATURE_GRAPH_TITLE = ["temperature_p1_22_p2_22"];
 TEMPERATURE_LINE_NAME = ["$T_{0}-r_1$","$T_{0}-r_3$","$\mathrm{Part} \mathrm{W_1}$","$$\mathrm{Part} \mathrm{W_3}$"];
 TEMPERATURE_LINE_WIDTH = [2,2,2,2];
 TEMPERATURE_LABEL_NAME = ["Time [$\mathrm{s}]$","Temperature [$^{\circ}\mathrm{C}]$"];
 TEMPERATURE_LINE_STYLE = ["--","--","-","-",];
 
 
-CONTROLINPUT_GRAPH_TITLE = ["temperature_kato"];
+CONTROLINPUT_GRAPH_TITLE = ["current_p1_22_p2_22"];
 CONTROLINPUT_LINE_NAME = ["$u_1$","$u_3$"];
 CONTROLINPUT_LABEL_NAME = ["Time [$\mathrm{s}]$","Current [$\mathrm{A}$]"];
 %温度
@@ -202,10 +202,9 @@ makeGraph(t',plotInputData , ...
                     "lineName",CONTROLINPUT_LINE_NAME, ...
                     "lineWidth",[1,1], ...
                     "labelName",CONTROLINPUT_LABEL_NAME, ...
-                    "yLimit",[-0.2,1.4],...
+                    "yLimit",[-0.2,1.0],...
                     "location","northwest",...
                     "graphName",CONTROLINPUT_GRAPH_TITLE, ...
                     "isSave",FILE_IS_SAVE,"outDir",OUT_DIR_PATH, ...
                     "fontSize",20,"LabelFontSize",30,"saveFileExt","png");
-
 

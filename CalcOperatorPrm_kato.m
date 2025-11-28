@@ -228,21 +228,21 @@ classdef CalcOperatorPrm_kato < handle
             
             
             %Aw_1
-            b1 = (2*obj.water.thermalCond * obj.S(5,1)) / obj.dx13;
+            b1 = (2*obj.water.thermalCond * obj.S(5,1)) / obj.dxThermalCond(1);
             b2 = obj.settings.heatTransferCoef_water * obj.S(6,1);
             c1 = m_omega13 * obj.water.specificHeat;
             
             A_w(1,1) = (b1 + b2) / c1;
             
             %Aw_2
-            b1 = (obj.water.thermalCond * obj.S(5,1)) / obj.dx2;
+            b1 = (obj.water.thermalCond * obj.S(5,1)) / obj.dxThermalCond(2);
             b2 = obj.settings.heatTransferCoef_water * obj.S(9,1);
             c1 = m_omega2 * obj.water.specificHeat;
             
             A_w(2,1) = (b1 + b2) / c1;
             
             %Aw_3
-            b1 = (2*obj.water.thermalCond * obj.S(5,1)) / obj.dx13;
+            b1 = (2*obj.water.thermalCond * obj.S(5,1)) / obj.dxThermalCond(3);
             b2 = obj.settings.heatTransferCoef_water * obj.S(6,1);
             c1 = m_omega13 * obj.water.specificHeat;
             

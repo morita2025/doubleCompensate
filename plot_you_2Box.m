@@ -1,10 +1,10 @@
 clear
 close all
 %% makeGraphの上書き 実機実験の結果をプロットする関数
-load("C:\Users\mykot\OneDrive - Tokyo University of Agriculture and Technology (1)\60MATLAB_sagyou\MicroreactorSystem2_morita\data\20250714_kato_5.mat");
-% load("C:\Users\mykot\OneDrive - Tokyo University of Agriculture and Technology (1)\60MATLAB_sagyou\kato_simulation\0703_1.mat");
+load("C:\Users\mykot\OneDrive - Tokyo University of Agriculture and Technology\60MATLAB_sagyou\MicroreactorSystem2_morita\data\20251110_tau_30_p1_010_p2_010.mat");
+% load("C:\Users\mykot\OneDrive - Tokyo University of Agriculture and Technology\60MATLAB_sagyou\kato_simulation\0703_1.mat");
 
-for i=1:2
+for i=1:1
     tempData{i} = data(i).other(4:end,[5,7]);
     timeData{i} = data(i).time(4:end-1);
     RefData{i} = data(i).other(4:end,[11,12]);
@@ -22,14 +22,14 @@ end
 
 
 %% makeGraph
-FILE_IS_SAVE=false;
-expTitle = "kato";
-graphToolPath="C:\Users\mykot\OneDrive - Tokyo University of Agriculture and Technology (1)\60MATLAB_sagyou\makeGraph";
+FILE_IS_SAVE=true;
+expTitle = "temperature_p1_10_p2_10";
+graphToolPath="C:\Users\mykot\OneDrive - Tokyo University of Agriculture and Technology\60MATLAB_sagyou\makeGraph";
 addpath(graphToolPath);
-DATA_DIR_PATH = "C:\Users\mykot\OneDrive - Tokyo University of Agriculture and Technology (1)\60MATLAB_sagyou\kato_simulation\graph"; %exp 
-OUT_DIR_PATH = "C:\Users\mykot\OneDrive - Tokyo University of Agriculture and Technology (1)\40発表ゼミ\jisaku\figure\2025_7_20\exp\tau5\";
+% DATA_DIR_PATH = "C:\Users\mykot\OneDrive - Tokyo University of Agriculture and Technology\60MATLAB_sagyou\kato_simulation\graph"; %exp 
+OUT_DIR_PATH = "C:\Users\mykot\OneDrive - Tokyo University of Agriculture and Technology\40発表ゼミ\jisaku\figure\2025_11_11\";
 
-for i=1:2
+for i=1:1
     TEMPERATURE_GRAPH_TITLE{i} = "Box"+ string(i) +"temperature " + expTitle;
     TEMPERATURE_LINE_NAME{i} = ["$T_{0}-r_1$","$T_{0}-r_3$","$\mathrm{Part} \mathrm{W_1}$","$$\mathrm{Part} \mathrm{W_3}$"];
     TEMPERATURE_LINE_WIDTH{i} = [1,1,2,2];
@@ -47,7 +47,7 @@ for i=1:2
                     "labelName",TEMPERATURE_LABEL_NAME{i}, ...
                     "graphName",TEMPERATURE_GRAPH_TITLE{i}, ...
                     "lineWidth",[1,1,1,1], ..."location","southeast",...
-                    "yLimit",[19 25.0],...
+                    "yLimit",[19 24.0],...
                     "isSave",FILE_IS_SAVE,"outDir",OUT_DIR_PATH, ...
                     "fontSize",20,"LabelFontSize",30,"saveFileExt","png");
 
@@ -56,8 +56,8 @@ for i=1:2
                         "lineName",CONTROLINPUT_LINE_NAME{i}, ...
                         "lineWidth",[1,1,1,1], ...
                         "labelName",CONTROLINPUT_LABEL_NAME{i}, ...
-                        "yLimit",[-0.2,1.8],...
-                        "location","northwest",...
+                        "yLimit",[-0.6,1.4],...
+                        "location","northeast",...
                         "graphName",CONTROLINPUT_GRAPH_TITLE{i}, ...
                         "isSave",FILE_IS_SAVE,"outDir",OUT_DIR_PATH, ...
                         "fontSize",21,"LabelFontSize",30,"saveFileExt","png");
